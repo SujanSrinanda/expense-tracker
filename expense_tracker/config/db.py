@@ -35,9 +35,16 @@ def init_db():
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL
+                password VARCHAR(255) NOT NULL,
+                monthly_income DECIMAL(10, 2) DEFAULT 0
             )
         """)
+        # Ensure monthly_income exists (Migration)
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN monthly_income DECIMAL(10, 2) DEFAULT 0")
+        except:
+            pass # Column already exists
+
         
         # Create expenses table
         cursor.execute("""
@@ -48,6 +55,42 @@ def init_db():
                 amount DECIMAL(10, 2) NOT NULL,
                 category VARCHAR(50) NOT NULL,
                 date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+
+        # Create savings_goals table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS savings_goals (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                title VARCHAR(100) NOT NULL,
+                target_amount DECIMAL(10, 2) NOT NULL,
+                current_amount DECIMAL(10, 2) DEFAULT 0,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+
+        # Create wishlist table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS wishlist (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                name VARCHAR(100) NOT NULL,
+                price DECIMAL(10, 2) NOT NULL,
+                priority ENUM('Low', 'Medium', 'High') DEFAULT 'Medium',
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+
+        # Create budgets table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS budgets (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                month_year VARCHAR(10) NOT NULL,
+                amount DECIMAL(10, 2) NOT NULL,
+                UNIQUE(user_id, month_year),
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         """)

@@ -267,6 +267,160 @@ td {
 
 .delete-btn:hover { opacity: 1; }
 
+.orange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+/* New Features Layout */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.insights-row {
+    margin-bottom: 2.5rem;
+}
+
+.insight-card {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05));
+    padding: 1.25rem 2rem;
+    border-radius: 20px;
+    border-left: 4px solid var(--accent-blue);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: 500;
+}
+
+.goals-grid, .wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.goal-card, .wish-card {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.progress-container {
+    height: 10px;
+    background: #0f172a;
+    border-radius: 5px;
+    margin: 1.5rem 0 0.5rem;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--accent-green);
+    transition: width 1s ease;
+}
+
+.priority-tag {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.high { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
+.medium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.low { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+
+.advisor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.advisor-card {
+    background: rgba(30, 41, 59, 0.3);
+    padding: 1.25rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.advisor-card h4 { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; }
+.advisor-card p { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
+
+#advisor-banner.warning {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--accent-red);
+}
+
+#advisor-banner.warning i { color: var(--accent-red); }
+
+.goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.goal-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.goal-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0.5;
+    transition: var(--transition);
+    color: var(--text-secondary);
+}
+
+.goal-actions .delete-goal:hover { color: var(--accent-red); opacity: 1; }
+.goal-actions .reset-goal:hover { color: var(--accent-blue); opacity: 1; }
+
+.btn-outline {
+
+
+    background: transparent;
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-outline:hover { background: var(--accent-blue); color: white; }
+
+/* Modal Improvements */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid #334155;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#budget-form input, #goal-form input, #wishlist-form input, #wishlist-form select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    color: white;
+}
+
+
 /* Modals */
 .modal {
     position: fixed;

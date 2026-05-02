@@ -39,6 +39,8 @@
                 <ul>
                     <li class="active" onclick="showSection('dashboard')"><i class="fas fa-th-large"></i> Dashboard</li>
                     <li onclick="showSection('expenses')"><i class="fas fa-list"></i> Expenses</li>
+                    <li onclick="showSection('savings')"><i class="fas fa-piggy-bank"></i> Savings</li>
+                    <li onclick="showSection('wishlist')"><i class="fas fa-heart"></i> Wishlist</li>
                     <li onclick="showSection('analytics')"><i class="fas fa-chart-pie"></i> Analytics</li>
                 </ul>
             </nav>
@@ -56,6 +58,8 @@
             <header>
                 <h1 id="section-title">Dashboard</h1>
                 <div class="actions">
+                    <button class="btn-outline" onclick="openFinanceModal()"><i class="fas fa-cog"></i> Finance Setup</button>
+                    <button class="btn-outline" onclick="openBonusModal()"><i class="fas fa-gift"></i> Add Bonus</button>
                     <button class="btn-primary" onclick="openModal()"><i class="fas fa-plus"></i> Add Expense</button>
                 </div>
             </header>
@@ -83,6 +87,41 @@
                             <h3>Top Category</h3>
                             <p id="top-category">None</p>
                         </div>
+                    </div>
+                    <!-- Budget KPI Card -->
+                    <div class="stat-card">
+                        <div class="icon-box orange"><i class="fas fa-bullseye"></i></div>
+                        <div class="stat-info">
+                            <h3>Budget Left</h3>
+                            <p id="budget-left">₹0.00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Smart Insights (Option 2: Below KPI Row) -->
+                <div class="insights-row">
+                    <div class="insight-card" id="advisor-banner">
+                        <i class="fas fa-user-tie"></i>
+                        <span id="smart-insight">Analyzing your financial health...</span>
+                    </div>
+                </div>
+
+                <!-- Advisor Section: 50/30/20 Breakdown -->
+                <div id="advisor-section" class="advisor-grid hidden">
+                    <div class="advisor-card">
+                        <h4>Needs (50%)</h4>
+                        <p id="needs-status">₹0.00 / ₹0.00</p>
+                        <div class="progress-container"><div id="needs-bar" class="progress-bar"></div></div>
+                    </div>
+                    <div class="advisor-card">
+                        <h4>Wants (30%)</h4>
+                        <p id="wants-status">₹0.00 / ₹0.00</p>
+                        <div class="progress-container"><div id="wants-bar" class="progress-bar"></div></div>
+                    </div>
+                    <div class="advisor-card">
+                        <h4>Savings (20%)</h4>
+                        <p id="savings-status">₹0.00 / ₹0.00</p>
+                        <div class="progress-container"><div id="savings-bar" class="progress-bar" style="background: var(--accent-purple)"></div></div>
                     </div>
                 </div>
 
@@ -113,6 +152,24 @@
                 </div>
             </section>
 
+            <!-- Savings Section (Option 1: New Page) -->
+            <section id="savings-section" class="section hidden">
+                <div class="section-header">
+                    <h2>Savings Goals</h2>
+                    <button class="btn-primary" onclick="openGoalModal()"><i class="fas fa-plus"></i> Add Goal</button>
+                </div>
+                <div id="goals-container" class="goals-grid"></div>
+            </section>
+
+            <!-- Wishlist Section (Option 1: New Page) -->
+            <section id="wishlist-section" class="section hidden">
+                <div class="section-header">
+                    <h2>Wishlist</h2>
+                    <button class="btn-primary" onclick="openWishlistModal()"><i class="fas fa-plus"></i> Add Item</button>
+                </div>
+                <div id="wishlist-container" class="wishlist-grid"></div>
+            </section>
+
             <!-- Expenses Section -->
             <section id="expenses-section" class="section hidden">
                 <div class="recent-transactions full-width">
@@ -141,7 +198,11 @@
                         <canvas id="analyticsCategoryChart"></canvas>
                     </div>
                     <div class="chart-card">
-                        <h3>Monthly Trend</h3>
+                        <h3>Income vs Spending</h3>
+                        <canvas id="incomeVsSpendingChart"></canvas>
+                    </div>
+                    <div class="chart-card full-width">
+                        <h3>Monthly Spending Trend</h3>
                         <canvas id="monthlyTrendChart"></canvas>
                     </div>
                 </div>
@@ -149,26 +210,96 @@
         </main>
     </div>
 
-    <!-- Add Expense Modal -->
+    <!-- Modals (Option 3) -->
+    <!-- Finance Setup Modal (Merged) -->
+    <div id="finance-modal" class="modal">
+        <div class="modal-content">
+            <h2>Finance Setup</h2>
+            <form id="finance-form">
+                <label>Monthly Income (₹)</label>
+                <input type="number" id="finance-income" placeholder="Total Earnings" required>
+                <label>Monthly Spending Budget (₹)</label>
+                <input type="number" id="finance-budget" placeholder="Spending Limit" required>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeFinanceModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bonus Modal -->
+    <div id="bonus-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add Extra Income / Bonus</h2>
+            <form id="bonus-form">
+                <input type="number" id="bonus-amount" placeholder="Amount (₹)" required>
+                <input type="text" id="bonus-description" placeholder="Description (e.g. Freelance, Bonus)" required>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeBonusModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Income</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Expense Modal -->
     <div id="expense-modal" class="modal">
         <div class="modal-content">
-            <h2>Add New Expense</h2>
+            <h2>Add Expense</h2>
             <form id="expense-form">
                 <input type="text" id="expense-title" placeholder="What did you buy?" required>
                 <div class="form-row">
-                    <input type="number" id="expense-amount" placeholder="Amount" step="0.01" required>
+                    <input type="number" id="expense-amount" placeholder="Amount (₹)" required>
                     <select id="expense-category">
                         <option value="Food">Food</option>
                         <option value="Shopping">Shopping</option>
                         <option value="Transport">Transport</option>
-                        <option value="Entertainment">Entertainment</option>
                         <option value="Bills">Bills</option>
                         <option value="Other">Other</option>
                     </select>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Add Expense</button>
+                    <button type="submit" class="btn-primary">Save Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Goal Modal -->
+    <div id="goal-modal" class="modal">
+        <div class="modal-content">
+            <h2>Create Savings Goal</h2>
+            <form id="goal-form">
+                <input type="text" id="goal-title" placeholder="Goal Name" required>
+                <input type="number" id="goal-target" placeholder="Target (₹)" required>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeGoalModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div id="wishlist-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add to Wishlist</h2>
+            <form id="wishlist-form">
+                <input type="text" id="wishlist-name" placeholder="Item Name" required>
+                <input type="number" id="wishlist-price" placeholder="Price (₹)" required>
+                <select id="wishlist-priority" title="Priority">
+                    <option value="Low">Low Priority</option>
+                    <option value="Medium" selected>Medium Priority</option>
+                    <option value="High">High Priority</option>
+                </select>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeWishlistModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Item</button>
                 </div>
             </form>
         </div>
