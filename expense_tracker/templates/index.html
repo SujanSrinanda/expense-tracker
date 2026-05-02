@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body class="dark-theme">
     <!-- Auth Overlay -->
     <div id="auth-overlay" class="overlay">
@@ -58,8 +60,10 @@
             <header>
                 <h1 id="section-title">Dashboard</h1>
                 <div class="actions">
-                    <button class="btn-outline" onclick="openFinanceModal()"><i class="fas fa-cog"></i> Finance Setup</button>
-                    <button class="btn-outline" onclick="openBonusModal()"><i class="fas fa-gift"></i> Add Bonus</button>
+                    <button class="btn-outline" onclick="openFinanceModal()"><i class="fas fa-cog"></i> Finance
+                        Setup</button>
+                    <button class="btn-outline" onclick="openBonusModal()"><i class="fas fa-gift"></i> Add
+                        Bonus</button>
                     <button class="btn-primary" onclick="openModal()"><i class="fas fa-plus"></i> Add Expense</button>
                 </div>
             </header>
@@ -111,17 +115,23 @@
                     <div class="advisor-card">
                         <h4>Needs (50%)</h4>
                         <p id="needs-status">₹0.00 / ₹0.00</p>
-                        <div class="progress-container"><div id="needs-bar" class="progress-bar"></div></div>
+                        <div class="progress-container">
+                            <div id="needs-bar" class="progress-bar"></div>
+                        </div>
                     </div>
                     <div class="advisor-card">
                         <h4>Wants (30%)</h4>
                         <p id="wants-status">₹0.00 / ₹0.00</p>
-                        <div class="progress-container"><div id="wants-bar" class="progress-bar"></div></div>
+                        <div class="progress-container">
+                            <div id="wants-bar" class="progress-bar"></div>
+                        </div>
                     </div>
                     <div class="advisor-card">
                         <h4>Savings (20%)</h4>
                         <p id="savings-status">₹0.00 / ₹0.00</p>
-                        <div class="progress-container"><div id="savings-bar" class="progress-bar" style="background: var(--accent-purple)"></div></div>
+                        <div class="progress-container">
+                            <div id="savings-bar" class="progress-bar" style="background: var(--accent-purple)"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -165,7 +175,8 @@
             <section id="wishlist-section" class="section hidden">
                 <div class="section-header">
                     <h2>Wishlist</h2>
-                    <button class="btn-primary" onclick="openWishlistModal()"><i class="fas fa-plus"></i> Add Item</button>
+                    <button class="btn-primary" onclick="openWishlistModal()"><i class="fas fa-plus"></i> Add
+                        Item</button>
                 </div>
                 <div id="wishlist-container" class="wishlist-grid"></div>
             </section>
@@ -194,19 +205,26 @@
             <section id="analytics-section" class="section hidden">
                 <div class="analytics-grid">
                     <div class="chart-card">
-                        <h3>Category Spending</h3>
-                        <canvas id="analyticsCategoryChart"></canvas>
+                        <h3>Category Breakdown</h3>
+                        <div class="chart-container">
+                            <canvas id="analyticsCategoryChart"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h3>Income vs Spending</h3>
-                        <canvas id="incomeVsSpendingChart"></canvas>
+                        <div class="chart-container">
+                            <canvas id="incomeVsSpendingChart"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card full-width">
                         <h3>Monthly Spending Trend</h3>
-                        <canvas id="monthlyTrendChart"></canvas>
+                        <div class="chart-container">
+                            <canvas id="monthlyTrendChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>
+
         </main>
     </div>
 
@@ -314,4 +332,5 @@
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
+
 </html>

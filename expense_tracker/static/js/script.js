@@ -74,7 +74,7 @@ function showSection(section) {
     document.querySelectorAll('.sidebar nav li').forEach(li => li.classList.remove('active'));
     document.getElementById(`${section}-section`).classList.remove('hidden');
     document.querySelector(`li[onclick="showSection('${section}')"]`).classList.add('active');
-    
+
     if (section === 'dashboard' || section === 'expenses') loadDashboard();
     else if (section === 'savings') loadGoals();
     else if (section === 'wishlist') loadWishlist();
@@ -111,7 +111,7 @@ document.getElementById('expense-form').addEventListener('submit', async (e) => 
     const title = document.getElementById('expense-title').value;
     const amount = parseFloat(document.getElementById('expense-amount').value);
     const category = document.getElementById('expense-category').value;
-    
+
     // Advisor Warning
     const statusRes = await fetch(`/financial-status?user_id=${currentUser.id}&month_year=${new Date().toISOString().slice(0, 7)}`);
     const status = await statusRes.json();
@@ -270,7 +270,7 @@ async function loadFinancialStatus() {
         }
 
         if (advisorSection) advisorSection.classList.remove('hidden');
-        
+
         // Update 50/30/20 Cards
         updateAdvisorCard('needs', data.spent * 0.7, data.advisor.needs_limit);
         updateAdvisorCard('wants', data.spent * 0.3, data.advisor.wants_limit);
@@ -306,7 +306,7 @@ async function loadBudget() {
         const res = await fetch(`/financial-summary?user_id=${currentUser.id}&month_year=${monthYear}`);
         const data = await res.json();
         const leftEl = document.getElementById('budget-left');
-        
+
         if (data) {
             leftEl.innerText = `₹${data.remaining.toFixed(2)}`;
             leftEl.style.color = data.remaining < 0 ? 'var(--accent-red)' : 'var(--text-primary)';
@@ -321,7 +321,7 @@ async function loadGoals() {
         const goals = await res.json();
         const container = document.getElementById('goals-container');
         if (!container) return;
-        
+
         container.innerHTML = goals.map(g => {
             const perc = Math.min((g.current_amount / (g.target_amount || 1)) * 100, 100);
             return `
@@ -385,37 +385,94 @@ async function loadAnalytics() {
 }
 
 function renderAnalyticsCharts(expenses, status) {
+    if (typeof Chart === 'undefined') return;
+    
     const validExpenses = expenses.filter(e => e.category !== 'Income');
     const categories = {};
     validExpenses.forEach(exp => { categories[exp.category] = (categories[exp.category] || 0) + parseFloat(exp.amount); });
     
-    // Category Chart
+    const dashboardColors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'];
+
+    // 1. Category Breakdown (Same as Dashboard)
     if (charts.analyticsCategory) charts.analyticsCategory.destroy();
-    const catCtx = document.getElementById('analyticsCategoryChart').getContext('2d');
-    charts.analyticsCategory = new Chart(catCtx, {
-        type: 'doughnut',
-        data: { labels: Object.keys(categories), datasets: [{ data: Object.values(categories), backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'], borderWidth: 0 }] },
-        options: { plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
-    });
+    const catCanvas = document.getElementById('analyticsCategoryChart');
+    if (catCanvas) {
+        charts.analyticsCategory = new Chart(catCanvas.getContext('2d'), {
+            type: 'doughnut',
+            data: { 
+                labels: Object.keys(categories), 
+                datasets: [{ 
+                    data: Object.values(categories), 
+                    backgroundColor: dashboardColors, 
+                    borderWidth: 0 
+                }] 
+            },
+            options: { 
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 12 } } } 
+                } 
+            }
+        });
+    }
 
-    // Income vs Spending
+    // 2. Income vs Spending
     if (charts.incomeVsSpend) charts.incomeVsSpend.destroy();
-    const ivsCtx = document.getElementById('incomeVsSpendingChart').getContext('2d');
-    charts.incomeVsSpend = new Chart(ivsCtx, {
-        type: 'bar',
-        data: { labels: ['Income', 'Spending'], datasets: [{ data: [status.total_income, status.spent], backgroundColor: ['#10b981', '#ef4444'], borderRadius: 10 }] },
-        options: { scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } } }
-    });
+    const ivsCanvas = document.getElementById('incomeVsSpendingChart');
+    if (ivsCanvas) {
+        charts.incomeVsSpend = new Chart(ivsCanvas.getContext('2d'), {
+            type: 'bar',
+            data: { 
+                labels: ['Income', 'Spending'], 
+                datasets: [{ 
+                    label: '₹ Amount',
+                    data: [status.total_income, status.spent], 
+                    backgroundColor: ['#10b981', '#ef4444'], 
+                    borderRadius: 10 
+                }] 
+            },
+            options: { 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                    x: { ticks: { color: '#94a3b8' } }
+                } 
+            }
+        });
+    }
 
-    // Trend
+    // 3. Monthly Spending Trend
     if (charts.trend) charts.trend.destroy();
-    const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
-    charts.trend = new Chart(trendCtx, {
-        type: 'line',
-        data: { labels: ['W1', 'W2', 'W3', 'W4'], datasets: [{ label: 'Spending', data: [status.spent * 0.2, status.spent * 0.3, status.spent * 0.4, status.spent * 0.1], borderColor: '#3b82f6', tension: 0.4 }] },
-        options: { scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
-    });
+    const trendCanvas = document.getElementById('monthlyTrendChart');
+    if (trendCanvas) {
+        charts.trend = new Chart(trendCanvas.getContext('2d'), {
+            type: 'line',
+            data: { 
+                labels: ['W1', 'W2', 'W3', 'W4'], 
+                datasets: [{ 
+                    label: 'Spending', 
+                    data: [status.spent * 0.2, status.spent * 0.3, status.spent * 0.4, status.spent * 0.1], 
+                    borderColor: '#3b82f6', 
+                    tension: 0.4,
+                    fill: false
+                }] 
+            },
+            options: { 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                    x: { ticks: { color: '#94a3b8' } }
+                } 
+            }
+        });
+    }
 }
+
+
+
+
 
 function renderCharts(expenses) {
     const validExpenses = expenses.filter(e => e.category !== 'Income');
