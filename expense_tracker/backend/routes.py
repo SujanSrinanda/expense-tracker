@@ -97,15 +97,24 @@ def update_income():
 @expense_bp.route('/bonus', methods=['POST'])
 def update_bonus():
     data = request.json
-    add_bonus(data['user_id'], data['amount'], data['description'])
-    return jsonify({"message": "Bonus added"}), 200
+    add_bonus_income(data['user_id'], data['amount'], data['description'])
+    return jsonify({"message": "Bonus added successfully"}), 200
+
+@expense_bp.route('/financial-summary', methods=['GET'])
+def fetch_summary():
+    user_id = request.args.get('user_id')
+    month_year = request.args.get('month_year')
+    summary = get_financial_summary(user_id, month_year)
+    return jsonify(summary), 200
 
 @expense_bp.route('/financial-status', methods=['GET'])
 def fetch_status():
     user_id = request.args.get('user_id')
     month_year = request.args.get('month_year')
-    status = get_financial_status(user_id, month_year)
+    # Backward compatibility or fallback
+    status = get_financial_summary(user_id, month_year)
     return jsonify(status), 200
+
 
 
 

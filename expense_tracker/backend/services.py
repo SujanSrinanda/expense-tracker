@@ -167,45 +167,44 @@ def set_income(user_id, income):
     cursor.close()
     db.close()
 
-def add_bonus(user_id, amount, description):
+def add_bonus_income(user_id, amount, description):
     db = get_db_connection()
     cursor = db.cursor()
-    # For simplicity, we treat bonus as adding to current month's income or as a one-time income boost
-    # Here we'll just track it as an extra expense record but as 'income' category if we had one
-    # Or better, we update the user's monthly income or a separate table.
-    # User requested 'Add Income / Bonus' as a feature. Let's just track extra income in expenses table with a flag.
-    cursor.execute("INSERT INTO expenses (user_id, title, amount, category, date) VALUES (%s, %s, %s, %s, CURDATE())", 
-                   (user_id, f"Bonus: {description}", -amount, "Income"))
+    cursor.execute("INSERT INTO bonus_income (user_id, amount, description) VALUES (%s, %s, %s)", 
+                   (user_id, amount, description))
     db.commit()
     cursor.close()
     db.close()
 
-def get_financial_status(user_id, month_year):
+def get_financial_summary(user_id, month_year):
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
+    
+    # Get base monthly income
     cursor.execute("SELECT monthly_income FROM users WHERE id = %s", (user_id,))
     income = float(cursor.fetchone()['monthly_income'] or 0)
     
-    # Get total spent (excluding negative 'Income' category)
-    cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = %s AND date LIKE %s AND category != 'Income'", (user_id, f"{month_year}%"))
+    # Get total bonuses for this month
+    cursor.execute("SELECT SUM(amount) FROM bonus_income WHERE user_id = %s AND created_at LIKE %s", (user_id, f"{month_year}%"))
+    bonus = float(cursor.fetchone()['SUM(amount)'] or 0)
+    
+    # Get total expenses for this month
+    cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = %s AND date LIKE %s", (user_id, f"{month_year}%"))
     spent = float(cursor.fetchone()['SUM(amount)'] or 0)
     
-    # Get extra income (stored as negative amount in 'Income' category)
-    cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = %s AND date LIKE %s AND category = 'Income'", (user_id, f"{month_year}%"))
-    extra_income = abs(float(cursor.fetchone()['SUM(amount)'] or 0))
+    # Get savings from goals
+    cursor.execute("SELECT SUM(current_amount) FROM savings_goals WHERE user_id = %s", (user_id,))
+    saved = float(cursor.fetchone()['SUM(current_amount)'] or 0)
     
-    total_income = income + extra_income
-    
-    goals = get_goals(user_id)
-    saved = sum(float(g['current_amount']) for g in goals)
+    total_income = income + bonus
     
     return {
         "income": income,
-        "extra_income": extra_income,
+        "bonus": bonus,
         "total_income": total_income,
         "spent": spent,
         "saved": saved,
-        "balance": total_income - spent,
+        "remaining": total_income - spent,
         "advisor": {
             "needs_limit": total_income * 0.5,
             "wants_limit": total_income * 0.3,
@@ -214,6 +213,8 @@ def get_financial_status(user_id, month_year):
             "deficit_amount": max(0, spent - total_income)
         }
     }
+
+
 
 
 

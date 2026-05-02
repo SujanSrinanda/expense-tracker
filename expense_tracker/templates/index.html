@@ -233,15 +233,22 @@
         <div class="modal-content">
             <h2>Add Extra Income / Bonus</h2>
             <form id="bonus-form">
-                <input type="number" id="bonus-amount" placeholder="Amount (₹)" required>
-                <input type="text" id="bonus-description" placeholder="Description (e.g. Freelance, Bonus)" required>
+                <div class="form-group">
+                    <label for="bonus-amount">Amount (₹)</label>
+                    <input type="number" id="bonus-amount" placeholder="e.g. 10000" required>
+                </div>
+                <div class="form-group">
+                    <label for="bonus-description">Description</label>
+                    <input type="text" id="bonus-description" placeholder="e.g. Freelance, Diwali Bonus" required>
+                </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeBonusModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Add Income</button>
+                    <button type="submit" id="bonus-submit" class="btn-primary">Add Income</button>
                 </div>
             </form>
         </div>
     </div>
+
 
 
     <!-- Expense Modal -->

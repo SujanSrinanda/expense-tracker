@@ -433,31 +433,46 @@ td {
 }
 
 .modal-content {
-    background: var(--bg-card);
-    padding: 2rem;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 500px;
+    background: #1e293b;
+    padding: 24px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
-#expense-form input, #expense-form select {
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.modal-content input, .modal-content select {
     width: 100%;
-    padding: 12px;
-    margin-bottom: 1rem;
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 10px;
+    padding: 10px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     color: white;
+    font-family: inherit;
+    font-size: 1rem;
 }
-
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: 12px;
+    margin-top: 24px;
 }
+
 
 .btn-secondary {
     background: transparent;

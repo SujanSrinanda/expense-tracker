@@ -1,5 +1,6 @@
 let currentUser = JSON.parse(localStorage.getItem('user')) || null;
 let charts = {};
+let isLoginMode = true;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,6 +20,53 @@ function showAuth() {
     document.getElementById('auth-overlay').classList.remove('hidden');
     document.getElementById('main-app').classList.add('hidden');
 }
+
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    const title = document.getElementById('auth-title');
+    const btn = document.getElementById('auth-btn');
+    const toggle = document.getElementById('auth-toggle');
+    if (isLoginMode) {
+        title.innerText = 'Login to Expensy';
+        btn.innerText = 'Login';
+        toggle.innerHTML = 'Don\'t have an account? <span onclick="toggleAuthMode()">Sign Up</span>';
+    } else {
+        title.innerText = 'Create Account';
+        btn.innerText = 'Sign Up';
+        toggle.innerHTML = 'Already have an account? <span onclick="toggleAuthMode()">Login</span>';
+    }
+}
+
+document.getElementById('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const endpoint = isLoginMode ? '/login' : '/signup';
+    try {
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            if (isLoginMode) {
+                currentUser = { id: data.user_id, username: data.username };
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                showApp();
+            } else {
+                alert('Account created! Please login.');
+                toggleAuthMode();
+            }
+        } else alert(data.error);
+    } catch (err) { alert('Connection error'); }
+});
+
+function logout() {
+    localStorage.removeItem('user');
+    location.reload();
+}
+
 
 // Section Navigation
 function showSection(section) {
@@ -99,18 +147,63 @@ document.getElementById('finance-form').addEventListener('submit', async (e) => 
     loadDashboard();
 });
 
+// Bonus Submission & Validation
+const bonusAmount = document.getElementById('bonus-amount');
+const bonusSubmit = document.getElementById('bonus-submit');
+
+if (bonusAmount && bonusSubmit) {
+    bonusAmount.addEventListener('input', () => {
+        bonusSubmit.disabled = !bonusAmount.value;
+        bonusSubmit.style.opacity = bonusAmount.value ? '1' : '0.5';
+    });
+}
+
 document.getElementById('bonus-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const amount = document.getElementById('bonus-amount').value;
     const description = document.getElementById('bonus-description').value;
-    await fetch('/bonus', {
+    try {
+        const res = await fetch('/bonus', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: currentUser.id, amount, description })
+        });
+        if (res.ok) {
+            alert("Bonus added successfully!");
+            closeBonusModal();
+            loadDashboard();
+        }
+    } catch (e) { console.error(e); }
+});
+
+document.getElementById('goal-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('goal-title').value;
+    const target = document.getElementById('goal-target').value;
+    await fetch('/goals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: currentUser.id, amount, description })
+        body: JSON.stringify({ user_id: currentUser.id, title, target })
     });
-    closeBonusModal();
-    loadDashboard();
+    closeGoalModal();
+    loadGoals();
 });
+
+document.getElementById('wishlist-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('wishlist-name').value;
+    const price = document.getElementById('wishlist-price').value;
+    const priority = document.getElementById('wishlist-priority').value;
+    await fetch('/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: currentUser.id, name, price, priority })
+    });
+    closeWishlistModal();
+    loadWishlist();
+});
+
+
 
 // Loaders
 async function loadDashboard() {
@@ -170,16 +263,20 @@ async function loadFinancialStatus() {
         const insight = document.getElementById('smart-insight');
         const advisorSection = document.getElementById('advisor-section');
 
-        if (data.total_income === 0) {
+        if (!data || data.total_income === 0) {
             insight.innerText = "Setup your finance profile to activate professional advisory.";
-            advisorSection.classList.add('hidden');
+            if (advisorSection) advisorSection.classList.add('hidden');
             return;
         }
-        advisorSection.classList.remove('hidden');
+
+        if (advisorSection) advisorSection.classList.remove('hidden');
+        
+        // Update 50/30/20 Cards
         updateAdvisorCard('needs', data.spent * 0.7, data.advisor.needs_limit);
         updateAdvisorCard('wants', data.spent * 0.3, data.advisor.wants_limit);
         updateAdvisorCard('savings', data.saved, data.advisor.savings_target);
 
+        // Update Insight Banner
         if (data.advisor.is_deficit) {
             banner.classList.add('warning');
             insight.innerText = `Professional Warning: You are running a deficit of ₹${data.advisor.deficit_amount.toFixed(0)}. Reduce non-essential spending immediately.`;
@@ -193,6 +290,7 @@ async function loadFinancialStatus() {
     } catch (e) { console.error(e); }
 }
 
+
 function updateAdvisorCard(type, spent, limit) {
     const perc = Math.min((spent / (limit || 1)) * 100, 100);
     const el = document.getElementById(`${type}-status`);
@@ -205,17 +303,55 @@ function updateAdvisorCard(type, spent, limit) {
 async function loadBudget() {
     const monthYear = new Date().toISOString().slice(0, 7);
     try {
-        const res = await fetch(`/budget?user_id=${currentUser.id}&month_year=${monthYear}`);
+        const res = await fetch(`/financial-summary?user_id=${currentUser.id}&month_year=${monthYear}`);
         const data = await res.json();
         const leftEl = document.getElementById('budget-left');
-        if (data && data.budget > 0) {
+        
+        if (data) {
             leftEl.innerText = `₹${data.remaining.toFixed(2)}`;
             leftEl.style.color = data.remaining < 0 ? 'var(--accent-red)' : 'var(--text-primary)';
-        } else leftEl.innerText = 'Set Budget';
+        }
+    } catch (e) { console.error(e); }
+}
+
+
+async function loadGoals() {
+    try {
+        const res = await fetch(`/goals?user_id=${currentUser.id}`);
+        const goals = await res.json();
+        const container = document.getElementById('goals-container');
+        if (!container) return;
+        
+        container.innerHTML = goals.map(g => {
+            const perc = Math.min((g.current_amount / (g.target_amount || 1)) * 100, 100);
+            return `
+                <div class="goal-card">
+                    <div class="goal-header">
+                        <h3>${g.title}</h3>
+                        <div class="goal-actions">
+                            <button onclick="resetGoal(${g.id})"><i class="fas fa-undo"></i></button>
+                            <button onclick="deleteGoal(${g.id})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <p class="goal-target">Target: ₹${parseFloat(g.target_amount).toFixed(0)}</p>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${perc}%"></div>
+                    </div>
+                    <div class="goal-footer">
+                        <span>₹${parseFloat(g.current_amount).toFixed(0)} saved</span>
+                        <span>${perc.toFixed(0)}%</span>
+                    </div>
+                    <button class="btn-outline" style="width:100%; margin-top:10px" onclick="addGoalProgress(${g.id})">
+                        <i class="fas fa-plus"></i> Add Savings
+                    </button>
+                </div>
+            `;
+        }).join('');
     } catch (e) { console.error(e); }
 }
 
 async function loadWishlist() {
+
     const res = await fetch(`/wishlist?user_id=${currentUser.id}`);
     const items = await res.json();
     const statusRes = await fetch(`/financial-status?user_id=${currentUser.id}&month_year=${new Date().toISOString().slice(0, 7)}`);
