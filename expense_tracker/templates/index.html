@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpenseTracker | Premium Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme">
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="overlay">
+        <div class="auth-card">
+            <h2 id="auth-title">Login to ExpenseTracker</h2>
+            <form id="auth-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <button type="submit" id="auth-btn">Login</button>
+            </form>
+            <p id="auth-toggle">Don't have an account? <span onclick="toggleAuthMode()">Sign Up</span></p>
+        </div>
+    </div>
+
+    <div class="app-container hidden" id="main-app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-wallet"></i>
+                <span>Expensy</span>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active" onclick="showSection('dashboard')"><i class="fas fa-th-large"></i> Dashboard</li>
+                    <li onclick="showSection('expenses')"><i class="fas fa-list"></i> Expenses</li>
+                    <li onclick="showSection('analytics')"><i class="fas fa-chart-pie"></i> Analytics</li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar" id="user-initials">JS</div>
+                <div class="user-info">
+                    <p id="display-username">John Smith</p>
+                    <span onclick="logout()">Logout</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <header>
+                <h1 id="section-title">Dashboard</h1>
+                <div class="actions">
+                    <button class="btn-primary" onclick="openModal()"><i class="fas fa-plus"></i> Add Expense</button>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="icon-box blue"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Spending</h3>
+                            <p id="total-spending">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box green"><i class="fas fa-exchange-alt"></i></div>
+                        <div class="stat-info">
+                            <h3>Transactions</h3>
+                            <p id="total-transactions">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box purple"><i class="fas fa-tag"></i></div>
+                        <div class="stat-info">
+                            <h3>Top Category</h3>
+                            <p id="top-category">None</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="main-grid">
+                    <div class="recent-transactions">
+                        <h2>Recent Transactions</h2>
+                        <div class="table-container">
+                            <table id="recent-table">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="chart-summary">
+                        <h2>Spending Breakdown</h2>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expenses Section -->
+            <section id="expenses-section" class="section hidden">
+                <div class="recent-transactions full-width">
+                    <div class="table-container">
+                        <table id="all-expenses-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenses-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics-section" class="section hidden">
+                <div class="analytics-grid">
+                    <div class="chart-card">
+                        <h3>Category Spending</h3>
+                        <canvas id="analyticsCategoryChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Monthly Trend</h3>
+                        <canvas id="monthlyTrendChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="expense-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Expense</h2>
+            <form id="expense-form">
+                <input type="text" id="expense-title" placeholder="What did you buy?" required>
+                <div class="form-row">
+                    <input type="number" id="expense-amount" placeholder="Amount" step="0.01" required>
+                    <select id="expense-category">
+                        <option value="Food">Food</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Bills">Bills</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
