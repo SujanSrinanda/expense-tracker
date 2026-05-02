@@ -18,7 +18,7 @@ def add_expense():
 
     expense_id = create_expense(user_id, title, amount, category)
     if expense_id:
-        log_success(f"Expense added: {title} (${amount})")
+        log_success(f"Expense added: {title} (₹{amount})")
         return jsonify({"message": "Expense added", "id": expense_id}), 201
     return jsonify({"error": "Failed to add expense"}), 500
 

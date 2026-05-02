@@ -139,7 +139,7 @@ async function loadDashboard() {
 
 function updateStats(expenses) {
     const total = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-    document.getElementById('total-spending').innerText = `$${total.toFixed(2)}`;
+    document.getElementById('total-spending').innerText = `₹${total.toFixed(2)}`;
     document.getElementById('total-transactions').innerText = expenses.length;
 
     const categories = {};
@@ -166,7 +166,7 @@ function renderTable(expenses) {
         <tr>
             <td>${exp.title}</td>
             <td><span class="badge ${exp.category.toLowerCase()}">${exp.category}</span></td>
-            <td>$${parseFloat(exp.amount).toFixed(2)}</td>
+            <td>₹${parseFloat(exp.amount).toFixed(2)}</td>
             <td>${new Date(exp.date).toLocaleDateString()}</td>
             <td><button class="delete-btn" onclick="deleteExp(${exp.id})"><i class="fas fa-trash"></i></button></td>
         </tr>
