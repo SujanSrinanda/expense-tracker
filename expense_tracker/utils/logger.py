@@ -8,11 +8,11 @@ RESET = "\033[0m"
 
 def log_success(message: str):
     """Log a success message in green."""
-    print(f"{GREEN}[✓] {message}{RESET}", file=sys.stdout)
+    print(f"{GREEN}[OK] {message}{RESET}", file=sys.stdout)
 
 def log_error(message: str):
     """Log an error message in red."""
-    print(f"{RED}[✗] {message}{RESET}", file=sys.stderr)
+    print(f"{RED}[ERR] {message}{RESET}", file=sys.stderr)
 
 def log_info(message: str):
     """Log an informational message in blue."""

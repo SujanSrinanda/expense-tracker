@@ -4,6 +4,10 @@ from utils.logger import log_success, log_error
 
 expense_bp = Blueprint('expense', __name__)
 
+@expense_bp.route('/time-info', methods=['GET'])
+def get_time_data():
+    return jsonify(get_time_info()), 200
+
 @expense_bp.route('/expenses', methods=['GET', 'POST'])
 def handle_expenses():
     if request.method == 'POST':

@@ -1,5 +1,21 @@
 from config.db import get_db_connection
 from utils.logger import log_error
+import datetime
+import calendar
+
+def get_time_info():
+    today = datetime.date.today()
+    total_days = calendar.monthrange(today.year, today.month)[1]
+    current_day = today.day
+    days_left = total_days - current_day
+    month_progress = round((current_day / total_days) * 100)
+    
+    return {
+        "days_left": days_left,
+        "total_days": total_days,
+        "current_day": current_day,
+        "month_progress": month_progress
+    }
 
 def add_user(username, password):
     db = get_db_connection()
@@ -46,8 +62,10 @@ def get_expenses(user_id):
     db = get_db_connection()
     if not db: return []
     cursor = db.cursor(dictionary=True)
+    today = datetime.date.today()
+    month_year = today.strftime("%Y-%m")
     try:
-        cursor.execute("SELECT * FROM expenses WHERE user_id = %s ORDER BY date DESC", (user_id,))
+        cursor.execute("SELECT * FROM expenses WHERE user_id = %s AND date LIKE %s ORDER BY date DESC", (user_id, f"{month_year}%"))
         return cursor.fetchall()
     finally:
         cursor.close()

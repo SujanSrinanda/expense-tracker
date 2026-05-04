@@ -82,7 +82,23 @@ function showSection(section) {
 }
 
 // Modals
-function openModal() { document.getElementById('expense-modal').style.display = 'flex'; }
+function openModal() {
+    const modal = document.getElementById('expense-modal');
+    modal.style.display = 'flex';
+    
+    const titleInput = document.getElementById('expense-title');
+    const amountInput = document.getElementById('expense-amount');
+    const saveBtn = document.getElementById('expense-save-btn');
+
+    const validate = () => {
+        const isValid = titleInput.value.trim() !== '' && amountInput.value.trim() !== '';
+        saveBtn.disabled = !isValid;
+    };
+
+    titleInput.addEventListener('input', validate);
+    amountInput.addEventListener('input', validate);
+    validate();
+}
 function closeModal() { document.getElementById('expense-modal').style.display = 'none'; }
 function openFinanceModal() { document.getElementById('finance-modal').style.display = 'flex'; fetchFinanceData(); }
 function closeFinanceModal() { document.getElementById('finance-modal').style.display = 'none'; }
@@ -95,13 +111,28 @@ function closeWishlistModal() { document.getElementById('wishlist-modal').style.
 
 async function fetchFinanceData() {
     const monthYear = new Date().toISOString().slice(0, 7);
+    const incomeInput = document.getElementById('finance-income');
+    const budgetInput = document.getElementById('finance-budget');
+    const saveBtn = document.getElementById('finance-save-btn');
+
+    const validate = () => {
+        const isValid = incomeInput.value.trim() !== '' && budgetInput.value.trim() !== '';
+        saveBtn.disabled = !isValid;
+    };
+
     try {
         const budgetRes = await fetch(`/budget?user_id=${currentUser.id}&month_year=${monthYear}`);
         const budgetData = await budgetRes.json();
         const statusRes = await fetch(`/financial-status?user_id=${currentUser.id}&month_year=${monthYear}`);
         const statusData = await statusRes.json();
-        document.getElementById('finance-income').value = statusData.income || '';
-        document.getElementById('finance-budget').value = budgetData.budget || '';
+        
+        incomeInput.value = statusData.income || '';
+        budgetInput.value = budgetData.budget || '';
+        
+        // Setup validation listeners
+        incomeInput.addEventListener('input', validate);
+        budgetInput.addEventListener('input', validate);
+        validate(); // Initial check
     } catch (e) { console.error(e); }
 }
 
@@ -305,11 +336,23 @@ async function loadBudget() {
     try {
         const res = await fetch(`/financial-summary?user_id=${currentUser.id}&month_year=${monthYear}`);
         const data = await res.json();
+        
+        // Fetch time info
+        const timeRes = await fetch('/time-info');
+        const timeData = await timeRes.json();
+
         const leftEl = document.getElementById('budget-left');
+        const daysLeftEl = document.getElementById('days-left');
+        const progressEl = document.getElementById('month-progress-text');
 
         if (data) {
             leftEl.innerText = `₹${data.remaining.toFixed(2)}`;
             leftEl.style.color = data.remaining < 0 ? 'var(--accent-red)' : 'var(--text-primary)';
+        }
+
+        if (timeData) {
+            daysLeftEl.innerText = `${timeData.days_left} days left`;
+            progressEl.innerText = `Month progress: ${timeData.month_progress}%`;
         }
     } catch (e) { console.error(e); }
 }
