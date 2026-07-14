@@ -114,7 +114,7 @@ expense-tracker-main/
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
+git clone "https://github.com/SujanSrinanda/expense-tracker.git"
 cd expense-tracker-main
 ```
 
